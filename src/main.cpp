@@ -6,7 +6,7 @@ Actuator_I2C motorA;
 unsigned long prevMillis = 0;
 
 void setup() {
-  motorA.begin(0,'B');
+  motorA.begin(5,'B');
   Serial.begin(9600);
   while(!Serial);
   Serial.println("serial began");
@@ -52,6 +52,9 @@ void loop() {
     }
     else if(serialMsg.substring(0,11) == "set fb time"){
       motorA.setFeedbackTime(serialMsg.substring(12).toInt());
+    }
+    else if(serialMsg.substring(0,18) == "set motor polarity"){
+      motorA.setMotorPolarity(serialMsg.substring(19).toInt());
     }
     else if(serialMsg == "extend"){
       motorA.extend();

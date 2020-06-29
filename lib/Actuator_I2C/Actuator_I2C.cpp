@@ -5,22 +5,24 @@ void Actuator_I2C::begin(byte address, char channel){
     mcp.begin(address);
 
     if(channel == 'A'){
-        _extPin = 0;
-        _retPin = 1;
-        _enablePin = 2;
-        _output1Pin = 3;
-        _output2Pin = 4;
-        _extLED = 5;
-        _retLED = 6;
+        _retPin = 0; //GPA0
+        _extPin = 1; //GPA1
+        _NCPin = 2; //GPA2
+        _enablePin = 3; //GPA3
+        _output2Pin = 4; //GPA4
+        _output1Pin = 5; //GPA5
+        _retLED = 6; //GPA6
+        _extLED = 7; //GPA7
     }
     else if(channel == 'B'){
-        _extPin = 15;
-        _retPin = 14;
-        _enablePin = 13;
-        _output1Pin = 12;
-        _output2Pin = 11;
-        _extLED = 10;
-        _retLED = 9;
+        _retPin = 15; //GB7
+        _extPin = 14; //GB6
+        _NCPin = 13; //GB5
+        _enablePin = 12; //GB4
+        _output2Pin = 11; //GB3
+        _output1Pin = 10; //GB2
+        _retLED = 9; //GB1
+        _extLED = 8; //GB0
     }
 
     mcp.pinMode(_extPin, INPUT);
@@ -32,11 +34,14 @@ void Actuator_I2C::begin(byte address, char channel){
     mcp.pinMode(_output2Pin, OUTPUT);
     mcp.pinMode(_extLED, OUTPUT);
     mcp.pinMode(_retLED, OUTPUT);
+    mcp.pinMode(_NCPin, INPUT);
+    mcp.pullUp(_NCPin, HIGH);
 
     setNormallyOpenFB(true);
     setHasFeedback(true);
     setFeedbackTime(3);
     setTimeout(3);
+    setMotorPolarity(false);
 
     readInput();
     if(_extFB){
@@ -79,6 +84,10 @@ void Actuator_I2C::setFeedbackTime(unsigned int FBTime){
     }
 }
 
+void Actuator_I2C::setMotorPolarity(bool flip){
+    _motorPolarity = flip;
+}
+
 void Actuator_I2C::extend(){
     if(!_extFB){
         _state = extending;
@@ -100,20 +109,20 @@ void Actuator_I2C::relax(){
 }
 
 void Actuator_I2C::readInput(){
-    _extFB = (mcp.digitalRead(_extPin) != _isNO);
-    _retFB = (mcp.digitalRead(_retPin) != _isNO);
+    _extFB = mcp.digitalRead(_extPin) != _isNO;
+    _retFB = mcp.digitalRead(_retPin) != _isNO;
 }
 
 void Actuator_I2C::writeOutput(){
     switch(_state){
         case extending:
-            mcp.digitalWrite(_output1Pin,HIGH);
-            mcp.digitalWrite(_output2Pin,LOW);
+            mcp.digitalWrite(_output1Pin,!_motorPolarity);
+            mcp.digitalWrite(_output2Pin,_motorPolarity);
             mcp.digitalWrite(_enablePin,HIGH);
             break;
         case retracting:
-            mcp.digitalWrite(_output1Pin,LOW);
-            mcp.digitalWrite(_output2Pin,HIGH);
+            mcp.digitalWrite(_output1Pin,_motorPolarity);
+            mcp.digitalWrite(_output2Pin,!_motorPolarity);
             mcp.digitalWrite(_enablePin,HIGH);
             break;
         case stopped:

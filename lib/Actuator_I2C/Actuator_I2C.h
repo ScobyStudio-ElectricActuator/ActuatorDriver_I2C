@@ -1,12 +1,17 @@
 ////////////////////////////////////
 //    Project: Actuator Driver    //
 //      Author: Scoby Studio      //
-//         Revision: v1.0         //
+//         Revision: v2.0         //
 ////////////////////////////////////
 /*
 Revision history
+v2.0
+-Add flip motor polarity
+-Optimize IO pin assignment for PCB
+-Pull unused pin high
+
 v1.0
--Remove set, get, min speed
+-Remove set, get, min speed, add begin
 -Copy code from Actuator_IO
 -Initial release
 */
@@ -37,6 +42,7 @@ class Actuator_I2C{
         void setNormallyOpenFB(bool isNormallyOpen);
         void setHasFeedback(bool hasFeedback);
         void setFeedbackTime(unsigned int FBTime);
+        void setMotorPolarity(bool flip);
 
         void extend();
         void retract();
@@ -53,11 +59,13 @@ class Actuator_I2C{
         int _output2Pin;
         int _extLED;
         int _retLED;
+        int _NCPin;
 
         unsigned long _timeout;
         bool _isNO;
         bool _hasFB;
         unsigned long _FBTime;
+        bool _motorPolarity;
 
         bool _extFB;
         bool _retFB;
